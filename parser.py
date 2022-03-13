@@ -12,9 +12,9 @@ class Parser():
             return p[0]
 
 
-        @self.pg.production("expression : FUNCTION PAREN_OPEN arguments PAREN_CLOSE BRACK_OPEN statement BRACK_CLOSE")
+        @self.pg.production("expression : FUNCTION PAREN_OPEN arguments PAREN_CLOSE BRACK_OPEN statement SEMI_COLON RETURN expression BRACK_CLOSE")
         def function(p):
-            return ast.Function(p[2], p[5])
+            return ast.Function(p[2], p[5], p[8])
 
         @self.pg.production("expression : NAME PAREN_OPEN parameters PAREN_CLOSE")
         def function_call(p):
@@ -47,10 +47,6 @@ class Parser():
         @self.pg.production("statement : statement SEMI_COLON statement")
         def conjunction(p):
             return ast.Conjunction(p[0], p[2])
-
-        @self.pg.production("statement : RETURN expression")
-        def ret(p):
-            return ast.Ret(p[1])
 
         @self.pg.production("expression : NUMBER")
         def number(p):
