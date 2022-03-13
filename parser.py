@@ -66,6 +66,8 @@ class Parser():
         @self.pg.production("expression : expression PLUS expression")
         @self.pg.production("expression : expression MINUS expression")
         @self.pg.production("expression : expression MUL expression")
+        @self.pg.production("expression : expression EQUAL expression")
+        @self.pg.production("expression : expression LESS expression")
         def binop(p):
             op = p[1].gettokentype()
             if(op == "PLUS"):
@@ -74,6 +76,10 @@ class Parser():
                 return ast.Sub(p[0], p[2])
             if(op == "MUL"):
                 return ast.Mul(p[0], p[2])
+            if(op == "EQUAL"):
+                return ast.Eq(p[0], p[2])
+            if(op == "LESS"):
+                return ast.Less(p[0], p[2])
 
         @self.pg.production("expression : PAREN_OPEN expression PAREN_CLOSE")
         def paren(p):

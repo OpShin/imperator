@@ -13,6 +13,7 @@ TOKENS = {
     "PLUS": "\+",
     "MINUS": "\-",
     "MUL": "\*",
+    "LESS": "\<",
     "EQUAL": "=",
     "COMMA": ",",
     "NUMBER": "\d+",

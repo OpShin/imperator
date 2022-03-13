@@ -66,6 +66,22 @@ class Mul(BinaryOp):
         return rf"(\{STATEMONAD} -> IData ((UnIData ({self.left.compile()} {STATEMONAD})) *i (UnIData ({self.right.compile()} {STATEMONAD}))))"
 
 @dataclass
+class Eq(BinaryOp):
+    def eval(self, state: State):
+        return self.left.eval(state) == self.right.eval(state)
+
+    def compile(self) -> str:
+        return rf"(\{STATEMONAD} -> ((UnIData ({self.left.compile()} {STATEMONAD})) ==i (UnIData ({self.right.compile()} {STATEMONAD}))))"
+
+@dataclass
+class Less(BinaryOp):
+    def eval(self, state: State):
+        return self.left.eval(state) == self.right.eval(state)
+
+    def compile(self) -> str:
+        return rf"(\{STATEMONAD} -> ((UnIData ({self.left.compile()} {STATEMONAD})) <i (UnIData ({self.right.compile()} {STATEMONAD}))))"
+
+@dataclass
 class Function(Expression):
     args: typing.List[str]
     body: "Statement"
@@ -151,7 +167,7 @@ class While(Statement):
     def compile(self) -> str:
         compiled_c = self.cond.compile()
         compiled_s = self.stmt.compile()
-        return rf"(\{STATEMONAD} -> let g = (\s f -> if ({compiled_c} s) then f ({compiled_s} s) else s) in (g {STATEMONAD} g))"
+        return rf"(\{STATEMONAD} -> let g = (\s f -> if ({compiled_c} s) then f ({compiled_s} s) f else s) in (g {STATEMONAD} g))"
 
 @dataclass
 class Skip(Statement):

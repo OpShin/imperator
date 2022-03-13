@@ -14,12 +14,11 @@ from parser import Parser
 # }"""
 program = """
 function(b){
-  a = function(x){
-    y = x + 5 |
-    return y
-  };
-  c = a(b) * 2 |
-  return c
+  c = 1;
+  while(0 < c){
+    c = c - 1
+  } |
+  return b
 }"""
 
 lexer = Lexer().get_lexer()
