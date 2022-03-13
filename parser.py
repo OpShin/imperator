@@ -7,14 +7,21 @@ class Parser():
     def __init__(self):
         self.pg = ParserGenerator(lexer.TOKENS.keys())
 
-        @self.pg.production("program : expression")
+        @self.pg.production("program : function")
         def program(p):
-            return p[0]
+            return ast.Program(p[0])
 
-
-        @self.pg.production("expression : FUNCTION PAREN_OPEN arguments PAREN_CLOSE BRACK_OPEN statement SEMI_COLON RETURN expression BRACK_CLOSE")
+        @self.pg.production("function : FUNCTION PAREN_OPEN arguments PAREN_CLOSE BRACK_OPEN RETURN expression BRACK_CLOSE")
         def function(p):
+            return ast.Function(p[2], ast.Skip(), p[6])
+
+        @self.pg.production("function : FUNCTION PAREN_OPEN arguments PAREN_CLOSE BRACK_OPEN statement PIPE RETURN expression BRACK_CLOSE")
+        def function2(p):
             return ast.Function(p[2], p[5], p[8])
+
+        @self.pg.production("expression : function")
+        def fun_exp(p):
+            return p[0]
 
         @self.pg.production("expression : NAME PAREN_OPEN parameters PAREN_CLOSE")
         def function_call(p):

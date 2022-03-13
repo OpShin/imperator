@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import typing
 
 State = typing.Dict[str, typing.Any]
-STATEMONAD = "statemonad"
+STATEMONAD = "s"
 
 class AST:
     def compile(self) -> str:
@@ -21,7 +21,7 @@ class Number(Expression):
         return int(self.value)
 
     def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> {self.value})"
+        return rf"(\{STATEMONAD} -> IData {self.value})"
 
 
 @dataclass
@@ -47,7 +47,7 @@ class Sum(BinaryOp):
         return self.left.eval(state) + self.right.eval(state)
 
     def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> {self.left.compile()} {STATEMONAD}) +i ({self.right.compile()} {STATEMONAD})"
+        return rf"(\{STATEMONAD} -> IData ((UnIData ({self.left.compile()} {STATEMONAD})) +i (UnIData ({self.right.compile()} {STATEMONAD}))))"
 
 @dataclass
 class Sub(BinaryOp):
@@ -55,7 +55,7 @@ class Sub(BinaryOp):
         return self.left.eval(state) - self.right.eval(state)
 
     def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> {self.left.compile()} {STATEMONAD}) -i ({self.right.compile()} {STATEMONAD})"
+        return rf"(\{STATEMONAD} -> IData ((UnIData ({self.left.compile()} {STATEMONAD})) -i (UnIData ({self.right.compile()} {STATEMONAD}))))"
 
 @dataclass
 class Mul(BinaryOp):
@@ -63,7 +63,7 @@ class Mul(BinaryOp):
         return self.left.eval(state) * self.right.eval(state)
 
     def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> {self.left.compile()} {STATEMONAD}) *i ({self.right.compile()} {STATEMONAD})"
+        return rf"(\{STATEMONAD} -> IData ((UnIData ({self.left.compile()} {STATEMONAD})) *i (UnIData ({self.right.compile()} {STATEMONAD}))))"
 
 @dataclass
 class Function(Expression):
@@ -71,7 +71,7 @@ class Function(Expression):
     body: "Statement"
     rv: Expression
 
-    def eval(self, state: State) -> typing.Any:
+    def eval(self, _: State) -> typing.Any:
         # at this point, the arguments are in the state
         # as variables with the special value "__args__"
         def fun(s: State):
@@ -82,11 +82,13 @@ class Function(Expression):
 
     def compile(self):
         body_c = self.body.compile()
+        ret_c = self.rv.compile()
         args_state = r"(\x -> "
-        for a in self.args:
-            args_state += f" if x = 0x{a.encode().hex()} then ({STATEMONAD} {a.encode().hex()}) else "
-        args_state += ")"
-        return rf"(\{STATEMONAD} -> {body_c} {args_state})"
+        for i, a in enumerate(self.args):
+            args_state += f"if (x ==b 0x{a.encode().hex()}) then p{i} else ("
+        args_state += " IData 0)" + len(self.args) * ")"
+        params = "\\" + " ".join(f"p{i}" for i, _ in enumerate(self.args))
+        return rf"(\_ -> ({params} -> {ret_c} ({body_c} {args_state})))"
 
 @dataclass
 class FunctionCall(Expression):
@@ -95,11 +97,11 @@ class FunctionCall(Expression):
 
     def eval(self, state: State) -> typing.Any:
         state["__args__"] = (a.eval(state) for a in self.args)
-        return state[self.function_name](state)
+        return state[self.function_name.encode().hex()](state)
 
     def compile(self) -> str:
-        compiled_args = " ".join(a.compile() for a in self.args)
-        return f"({self.function_name} {STATEMONAD} {compiled_args})"
+        compiled_args = " ".join(f"({a.compile()} {STATEMONAD})" for a in self.args)
+        return rf"(\{STATEMONAD} -> ({STATEMONAD} 0x{self.function_name.encode().hex()}) {compiled_args})"
 
 
 class Statement(AST):
@@ -117,7 +119,7 @@ class Assignment(Statement):
 
     def compile(self) -> str:
         compiled_e = self.value.compile()
-        return rf"(\{STATEMONAD} -> (\x -> if x = 0x{self.variable.encode().hex()} then ({compiled_e} {STATEMONAD}) else ({STATEMONAD} x))"
+        return rf"(\{STATEMONAD} -> (\x -> if (x ==b 0x{self.variable.encode().hex()}) then ({compiled_e} {STATEMONAD}) else ({STATEMONAD} x)))"
 
 
 @dataclass
@@ -150,3 +152,24 @@ class While(Statement):
         compiled_c = self.cond.compile()
         compiled_s = self.stmt.compile()
         return rf"(\{STATEMONAD} -> let g = (\s f -> if ({compiled_c} s) then f ({compiled_s} s) else s) in (g {STATEMONAD} g))"
+
+@dataclass
+class Skip(Statement):
+
+    def exec(self, state: State) -> State:
+        return state
+
+    def compile(self) -> str:
+        return rf"(\{STATEMONAD} -> {STATEMONAD})"
+
+@dataclass
+class Program(AST):
+    function: Function
+
+    def exec(self, *args) -> State:
+        state = {"__args__": args}
+        return self.function.eval({})(state)
+
+    def compile(self):
+        return rf"({self.function.compile()} ())"
+

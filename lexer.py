@@ -9,6 +9,7 @@ TOKENS = {
     "BRACK_OPEN": "\{",
     "BRACK_CLOSE": "\}",
     "SEMI_COLON": "\;",
+    "PIPE": "\|",
     "PLUS": "\+",
     "MINUS": "\-",
     "MUL": "\*",
