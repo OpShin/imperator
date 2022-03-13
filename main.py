@@ -5,6 +5,11 @@ program = """
 function (input) {
    foo = function(a){return a + 3};
    x = (1 + foo(input)) + 3;
+   n = 3;
+   while(n){
+      x = x + 1;
+      n = n - 1
+   };
    return x
 }"""
 

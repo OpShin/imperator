@@ -37,6 +37,15 @@ class Sum(BinaryOp):
     def eval(self, state: State):
         return self.left.eval(state) + self.right.eval(state)
 
+@dataclass
+class Sub(BinaryOp):
+    def eval(self, state: State):
+        return self.left.eval(state) - self.right.eval(state)
+
+@dataclass
+class Mul(BinaryOp):
+    def eval(self, state: State):
+        return self.left.eval(state) * self.right.eval(state)
 
 @dataclass
 class Function(Expression):
@@ -88,4 +97,15 @@ class Conjunction(Statement):
 
     def exec(self, state: State) -> RV:
         state2 = self.first.exec(state)[1]
-        return self.second.exec(state)
+        return self.second.exec(state2)
+
+@dataclass
+class While(Statement):
+    cond: Expression
+    stmt: Statement
+
+    def exec(self, state: State) -> RV:
+        cur_state = state
+        while(self.cond.eval(cur_state)):
+            cur_state = self.stmt.exec(cur_state)[1]
+        return ((), cur_state)

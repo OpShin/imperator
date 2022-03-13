@@ -11,6 +11,7 @@ class Parser():
         def program(p):
             return p[0]
 
+
         @self.pg.production("expression : FUNCTION PAREN_OPEN arguments PAREN_CLOSE BRACK_OPEN statement BRACK_CLOSE")
         def function(p):
             return ast.Function(p[2], p[5])
@@ -35,6 +36,10 @@ class Parser():
         def arguments(p):
             return [p[0].value] + p[2]
 
+        @self.pg.production("statement : WHILE PAREN_OPEN expression PAREN_CLOSE BRACK_OPEN statement BRACK_CLOSE")
+        def loop(p):
+            return ast.While(p[2], p[5])
+
         @self.pg.production("statement : NAME EQUAL expression")
         def assignment(p):
             return ast.Assignment(p[0].value, p[2])
@@ -56,15 +61,19 @@ class Parser():
             return ast.Variable(p[0].value)
 
         @self.pg.production("expression : expression PLUS expression")
+        @self.pg.production("expression : expression MINUS expression")
+        @self.pg.production("expression : expression MUL expression")
         def binop(p):
-            return ast.Sum(p[0], p[2])
-
-        @self.pg.production("expression : expression PLUS expression")
-        def binop(p):
-            return ast.Sum(p[0], p[2])
+            op = p[1].gettokentype()
+            if(op == "PLUS"):
+                return ast.Sum(p[0], p[2])
+            if(op == "MINUS"):
+                return ast.Sub(p[0], p[2])
+            if(op == "MUL"):
+                return ast.Mul(p[0], p[2])
 
         @self.pg.production("expression : PAREN_OPEN expression PAREN_CLOSE")
-        def binop(p):
+        def paren(p):
             return p[1]
 
         @self.pg.error
