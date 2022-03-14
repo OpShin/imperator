@@ -1,5 +1,5 @@
 from rply import ParserGenerator
-import ast
+import imp_ast as ast
 import lexer
 
 class Parser():
