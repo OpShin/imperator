@@ -22,7 +22,7 @@ function (input) {
 lexer = Lexer().get_lexer()
 parser = Parser().get_parser()
 tokens = lexer.lex(program)
-ast  = parser.parse(tokens)
+ast = parser.parse(tokens)
 
 print(ast.exec(5))
 print(ast.compile())
