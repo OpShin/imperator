@@ -14,11 +14,8 @@ from parser import Parser
 # }"""
 program = """
 function(b){
-  c = 1;
-  while(0 < c){
-    c = c - 1
-  } |
-  return b
+  a = function(c){return b}|
+  return a(0)
 }"""
 
 lexer = Lexer().get_lexer()

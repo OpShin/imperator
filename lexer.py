@@ -4,6 +4,7 @@ TOKENS = {
     "FUNCTION": "function",
     "RETURN": "return",
     "WHILE": "while",
+    "INT": "int",
     "PAREN_OPEN": "\(",
     "PAREN_CLOSE": "\)",
     "BRACK_OPEN": "\{",

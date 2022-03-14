@@ -81,6 +81,10 @@ class Parser():
             if(op == "LESS"):
                 return ast.Less(p[0], p[2])
 
+        @self.pg.production("expression : INT expression")
+        def intcast(p):
+            return ast.IntCast(p[1])
+
         @self.pg.production("expression : PAREN_OPEN expression PAREN_CLOSE")
         def paren(p):
             return p[1]

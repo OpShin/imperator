@@ -21,7 +21,7 @@ class Number(Expression):
         return int(self.value)
 
     def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> IData {self.value})"
+        return rf"(\{STATEMONAD} -> {self.value})"
 
 
 @dataclass
@@ -47,7 +47,7 @@ class Sum(BinaryOp):
         return self.left.eval(state) + self.right.eval(state)
 
     def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> IData ((UnIData ({self.left.compile()} {STATEMONAD})) +i (UnIData ({self.right.compile()} {STATEMONAD}))))"
+        return rf"(\{STATEMONAD} -> (({self.left.compile()} {STATEMONAD}) +i ({self.right.compile()} {STATEMONAD})))"
 
 @dataclass
 class Sub(BinaryOp):
@@ -55,7 +55,7 @@ class Sub(BinaryOp):
         return self.left.eval(state) - self.right.eval(state)
 
     def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> IData ((UnIData ({self.left.compile()} {STATEMONAD})) -i (UnIData ({self.right.compile()} {STATEMONAD}))))"
+        return rf"(\{STATEMONAD} -> (({self.left.compile()} {STATEMONAD}) -i ({self.right.compile()} {STATEMONAD})))"
 
 @dataclass
 class Mul(BinaryOp):
@@ -63,7 +63,7 @@ class Mul(BinaryOp):
         return self.left.eval(state) * self.right.eval(state)
 
     def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> IData ((UnIData ({self.left.compile()} {STATEMONAD})) *i (UnIData ({self.right.compile()} {STATEMONAD}))))"
+        return rf"(\{STATEMONAD} -> (({self.left.compile()} {STATEMONAD}) *i ({self.right.compile()} {STATEMONAD})))"
 
 @dataclass
 class Eq(BinaryOp):
@@ -71,15 +71,25 @@ class Eq(BinaryOp):
         return self.left.eval(state) == self.right.eval(state)
 
     def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> ((UnIData ({self.left.compile()} {STATEMONAD})) ==i (UnIData ({self.right.compile()} {STATEMONAD}))))"
+        return rf"(\{STATEMONAD} -> (({self.left.compile()} {STATEMONAD}) ==i ({self.right.compile()} {STATEMONAD})))"
 
 @dataclass
 class Less(BinaryOp):
     def eval(self, state: State):
-        return self.left.eval(state) == self.right.eval(state)
+        return self.left.eval(state) < self.right.eval(state)
 
     def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> ((UnIData ({self.left.compile()} {STATEMONAD})) <i (UnIData ({self.right.compile()} {STATEMONAD}))))"
+        return rf"(\{STATEMONAD} -> (({self.left.compile()} {STATEMONAD}) <i ({self.right.compile()} {STATEMONAD})))"
+
+@dataclass
+class IntCast(Expression):
+    expression: Expression
+
+    def eval(self, state: State):
+        return int(self.expression.eval(state))
+
+    def compile(self) -> str:
+        return rf"(\{STATEMONAD} -> UnIData ({self.expression.compile()} {STATEMONAD}))"
 
 @dataclass
 class Function(Expression):
@@ -87,11 +97,13 @@ class Function(Expression):
     body: "Statement"
     rv: Expression
 
-    def eval(self, _: State) -> typing.Any:
+    def eval(self, state: State) -> typing.Any:
         # at this point, the arguments are in the state
         # as variables with the special value "__args__"
+        local_state = state.copy()
         def fun(s: State):
-            new_state = {a.encode().hex(): v for a, v in zip(self.args, s["__args__"])}
+            new_state = local_state
+            new_state.update({a.encode().hex(): v for a, v in zip(self.args, s["__args__"])})
             final_state = self.body.exec(new_state)
             return self.rv.eval(final_state)
         return fun
@@ -102,9 +114,9 @@ class Function(Expression):
         args_state = r"(\x -> "
         for i, a in enumerate(self.args):
             args_state += f"if (x ==b 0x{a.encode().hex()}) then p{i} else ("
-        args_state += " IData 0)" + len(self.args) * ")"
+        args_state += f" ({STATEMONAD} x))" + len(self.args) * ")"
         params = "\\" + " ".join(f"p{i}" for i, _ in enumerate(self.args))
-        return rf"(\_ -> ({params} -> {ret_c} ({body_c} {args_state})))"
+        return rf"(\{STATEMONAD} -> ({params} -> {ret_c} ({body_c} {args_state})))"
 
 @dataclass
 class FunctionCall(Expression):
@@ -187,5 +199,5 @@ class Program(AST):
         return self.function.eval({})(state)
 
     def compile(self):
-        return rf"({self.function.compile()} ())"
+        return rf"({self.function.compile()} (\x -> 0))"
 
