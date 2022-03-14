@@ -23,6 +23,10 @@ class Parser():
         def fun_exp(p):
             return p[0]
 
+        @self.pg.production("expression : TEXT")
+        def text(p):
+            return ast.Text(p[0].value)
+
         @self.pg.production("expression : NAME PAREN_OPEN parameters PAREN_CLOSE")
         def function_call(p):
             return ast.FunctionCall(p[0].value, p[2])
@@ -46,6 +50,10 @@ class Parser():
         @self.pg.production("statement : WHILE PAREN_OPEN expression PAREN_CLOSE BRACK_OPEN statement BRACK_CLOSE")
         def loop(p):
             return ast.While(p[2], p[5])
+
+        @self.pg.production("statement : TRACE PAREN_OPEN expression PAREN_CLOSE")
+        def trace(p):
+            return ast.Trace(p[2])
 
         @self.pg.production("statement : NAME EQUAL expression")
         def assignment(p):

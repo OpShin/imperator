@@ -23,6 +23,15 @@ class Number(Expression):
     def compile(self) -> str:
         return rf"(\{STATEMONAD} -> {self.value})"
 
+@dataclass
+class Text(Expression):
+    value: str
+
+    def eval(self, state):
+        return str(self.value[1:-1])
+
+    def compile(self) -> str:
+        return rf"(\{STATEMONAD} -> {self.value})"
 
 @dataclass
 class Variable(Expression):
@@ -163,6 +172,17 @@ class Conjunction(Statement):
         compiled_f = self.first.compile()
         compiled_s = self.second.compile()
         return rf"(\{STATEMONAD} -> {compiled_s} ({compiled_f} {STATEMONAD}))"
+
+@dataclass
+class Trace(Statement):
+    value: Expression
+
+    def exec(self, state: State) -> State:
+        print(self.value.eval(state))
+        return state
+
+    def compile(self) -> str:
+        return rf"(\{STATEMONAD} -> ! Trace ({self.value.compile()} {STATEMONAD}) {STATEMONAD} )"
 
 
 @dataclass
