@@ -2,6 +2,11 @@ from rply import ParserGenerator
 import imp_ast as ast
 import lexer
 
+PRECEDENCE = [
+    ('left', ["PLUS", "MINUS"]),
+    ('left', ["MUL"]),
+]
+
 class Parser():
 
     def __init__(self):
