@@ -52,6 +52,10 @@ class Parser():
         def loop(p):
             return ast.While(p[2], p[5])
 
+        @self.pg.production("statement : IF PAREN_OPEN expression PAREN_CLOSE BRACK_OPEN statement BRACK_CLOSE ELSE BRACK_OPEN statement BRACK_CLOSE")
+        def if_else(p):
+            return ast.IfElse(p[2], p[5], p[9])
+
         @self.pg.production("statement : TRACE PAREN_OPEN expression PAREN_CLOSE")
         def trace(p):
             return ast.Trace(p[2])
@@ -94,9 +98,9 @@ class Parser():
             if(op == "LESS"):
                 return ast.Less(p[0], p[2])
 
-        @self.pg.production("expression : INT expression")
+        @self.pg.production("expression : INT PAREN_OPEN expression PAREN_CLOSE")
         def intcast(p):
-            return ast.IntCast(p[1])
+            return ast.IntCast(p[2])
 
         @self.pg.production("expression : PAREN_OPEN expression PAREN_CLOSE")
         def paren(p):

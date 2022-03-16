@@ -3,7 +3,7 @@ from parser import Parser
 
 program = """
  function (input) {
-    input = int input;
+    input = int(input);
     foo = function(_){return input + 3};
     x = (1 + foo(())) + 3;
     n = 3;
@@ -16,11 +16,11 @@ program = """
  }"""
 # program = """
 # function(b){
-#   b = int b;
+#   b = int(b);
 #   while(0 < b){
 #      trace("Test");
 #      b = b - 1
-#   } |
+#   }
 #   return b
 # }"""
 

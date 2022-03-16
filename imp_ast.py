@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from collections import defaultdict
 import typing
 
 State = typing.Dict[str, typing.Any]
@@ -120,7 +121,7 @@ class Function(Expression):
         # as variables with the special value "__args__"
         local_state = state.copy()
         def fun(s: State):
-            new_state = local_state
+            new_state = local_state.copy()
             new_state.update({a.encode().hex(): v for a, v in zip(self.args, s["__args__"])})
             final_state = self.body.exec(new_state)
             return self.rv.eval(final_state)
@@ -220,12 +221,32 @@ class Skip(Statement):
         return rf"(\{STATEMONAD} -> {STATEMONAD})"
 
 @dataclass
+class IfElse(Statement):
+    cond: Expression
+    if_stmt: Statement
+    else_stmt: Statement
+
+    def exec(self, state: State) -> State:
+        cur_state = state
+        if(self.cond.eval(cur_state)):
+            cur_state = self.if_stmt.exec(cur_state)
+        else:
+            cur_state = self.else_stmt.exec(cur_state)
+        return cur_state
+
+    def compile(self) -> str:
+        compiled_c = self.cond.compile()
+        compiled_is = self.if_stmt.compile()
+        compiled_es = self.else_stmt.compile()
+        return rf"(\{STATEMONAD} -> if ({compiled_c} {STATEMONAD}) then ({compiled_is} {STATEMONAD}) else ({compiled_es} {STATEMONAD}))"
+
+@dataclass
 class Program(AST):
     function: Function
 
     def exec(self, *args) -> State:
         state = {"__args__": args}
-        return self.function.eval({})(state)
+        return self.function.eval(defaultdict(int))(state)
 
     def compile(self):
         return rf"({self.function.compile()} (\x -> 0))"
