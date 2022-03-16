@@ -100,6 +100,15 @@ class IntCast(Expression):
     def compile(self) -> str:
         return rf"(\{STATEMONAD} -> UnIData ({self.expression.compile()} {STATEMONAD}))"
 
+
+class Unit(Expression):
+
+    def eval(self, state: State) -> typing.Any:
+        return ()
+
+    def compile(self) -> str:
+        return rf"(\{STATEMONAD} -> ())"
+
 @dataclass
 class Function(Expression):
     args: typing.List[str]

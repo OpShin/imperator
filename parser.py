@@ -16,13 +16,9 @@ class Parser():
         def program(p):
             return ast.Program(p[0])
 
-        @self.pg.production("function : FUNCTION PAREN_OPEN arguments PAREN_CLOSE BRACK_OPEN RETURN expression BRACK_CLOSE")
-        def function(p):
-            return ast.Function(p[2], ast.Skip(), p[6])
-
-        @self.pg.production("function : FUNCTION PAREN_OPEN arguments PAREN_CLOSE BRACK_OPEN statement PIPE RETURN expression BRACK_CLOSE")
+        @self.pg.production("function : FUNCTION PAREN_OPEN arguments PAREN_CLOSE BRACK_OPEN statement RETURN expression BRACK_CLOSE")
         def function2(p):
-            return ast.Function(p[2], p[5], p[8])
+            return ast.Function(p[2], p[5], p[7])
 
         @self.pg.production("expression : function")
         def fun_exp(p):
@@ -68,6 +64,10 @@ class Parser():
         def conjunction(p):
             return ast.Conjunction(p[0], p[2])
 
+        @self.pg.production("statement : ")
+        def skip(p):
+            return ast.Skip()
+
         @self.pg.production("expression : NUMBER")
         def number(p):
             return ast.Number(p[0].value)
@@ -101,6 +101,10 @@ class Parser():
         @self.pg.production("expression : PAREN_OPEN expression PAREN_CLOSE")
         def paren(p):
             return p[1]
+
+        @self.pg.production("expression : PAREN_OPEN PAREN_CLOSE")
+        def unit(p):
+            return ast.Unit()
 
         @self.pg.error
         def error_handle(token):
