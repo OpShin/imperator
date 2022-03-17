@@ -240,14 +240,18 @@ class IfElse(Statement):
         compiled_es = self.else_stmt.compile()
         return rf"(\{STATEMONAD} -> if ({compiled_c} {STATEMONAD}) then ({compiled_is} {STATEMONAD}) else ({compiled_es} {STATEMONAD}))"
 
+
+# program is an execution of all commands, then calling variable "main" with arguments
 @dataclass
 class Program(AST):
-    function: Function
+    stmt: Statement
+    function_name = "main"
 
     def exec(self, *args) -> State:
-        state = {"__args__": args}
-        return self.function.eval(defaultdict(int))(state)
+        state = self.stmt.exec(defaultdict(int))
+        state["__args__"] = args
+        return state[self.function_name.encode().hex()](state)
 
     def compile(self):
-        return rf"({self.function.compile()} (\x -> 0))"
+        return rf"({self.stmt.compile()} (\x -> 0)) 0x{self.function_name.encode().hex()}"
 

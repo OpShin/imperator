@@ -2,7 +2,7 @@ from lexer import Lexer
 from parser import Parser
 
 program = """
- function (input) {
+main = function (input) {
     input = int(input);
     foo = function(_){return input + 3};
     x = (1 + foo(())) + 3;

@@ -26,7 +26,7 @@ and enrich the ecosystem.
 Sure thing.
 
 ```imperator
-function (input) {
+main = function (input) {
    input = int(input);
    foo = function(a){return a + 3};
    x = (1 + foo(input)) * 3;

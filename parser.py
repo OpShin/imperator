@@ -12,7 +12,7 @@ class Parser():
     def __init__(self):
         self.pg = ParserGenerator(lexer.TOKENS.keys())
 
-        @self.pg.production("program : function")
+        @self.pg.production("program : statement")
         def program(p):
             return ast.Program(p[0])
 
