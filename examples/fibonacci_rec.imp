@@ -1,0 +1,11 @@
+function(n){
+   fib = function(k, f){
+      if(k < 2){
+        retval = k
+      } else {
+        retval = f(k-1) + f(k-2)
+      }
+      return retval
+   }
+   return fib(int(n), fib)
+}

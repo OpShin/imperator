@@ -21,15 +21,15 @@ actors. Moreover, the state of the contract is not stored in the blockchain.
 However, this project may help at convincing more people to develop on Cardano
 and enrich the ecosystem.
 
-### Show me a sample program!
+### How does it work?
 
-Sure thing.
+First you write a small program in imperator.
 
 ```imperator
-main = function (input) {
-   input = int(input);
+main = function (b) {
+   b = int(b);
    foo = function(a){return a + 3};
-   x = (1 + foo(input)) * 3;
+   x = (1 + foo(b)) * 3;
    n = 3;
    while(0 < n){
       x = x + 1;
@@ -39,3 +39,31 @@ main = function (input) {
 }
 ```
 
+This compiles into the following (rather unwieldy) pluto code,
+using the compiler provided in this repository.
+
+```bash
+$ python3 imperator.py compile examples/showcase.imp
+((\s -> (\x -> if (x ==b 0x6d61696e) then ((\s -> (\p0 -> (\s -> s 0x78) ((\s -> (\s -> (\s -> (\s -> (\s -> let g = (\s f -> if ((\s -> (((\s -> 0) s) <i ((\s -> s 0x6e) s))) s) then f ((\s -> (\s -> (\x -> if (x ==b 0x6e) then ((\s -> (((\s -> s 0x6e) s) -i ((\s -> 1) s))) s) else (s x))) ((\s -> (\x -> if (x ==b 0x78) then ((\s -> (((\s -> s 0x78) s) +i ((\s -> 1) s))) s) else (s x))) s)) s) f else s) in (g s g)) ((\s -> (\x -> if (x ==b 0x6e) then ((\s -> 3) s) else (s x))) s)) ((\s -> (\x -> if (x ==b 0x78) then ((\s -> (((\s -> (((\s -> 1) s) +i ((\s -> (s 0x666f6f) ((\s -> s 0x62) s)) s))) s) *i ((\s -> 3) s))) s) else (s x))) s)) ((\s -> (\x -> if (x ==b 0x666f6f) then ((\s -> (\p0 -> (\s -> (((\s -> s 0x61) s) +i ((\s -> 3) s))) ((\s -> s) (\x -> if (x ==b 0x61) then p0 else ( (s x)))))) s) else (s x))) s)) ((\s -> (\x -> if (x ==b 0x62) then ((\s -> UnIData ((\s -> s 0x62) s)) s) else (s x))) s)) (\x -> if (x ==b 0x62) then p0 else ( (s x)))))) s) else (s x))) (\x -> 0)) 0x6d61696e
+```
+
+And produces the following output
+```bash
+$ pluto run showcase.pluto 5
+
+ExBudget
+--------
+ExBudget {exBudgetCPU = ExCPU 31725354, exBudgetMemory = ExMemory 84924}
+
+Result
+------
+Constant () (Some (ValueOf integer 30))
+```
+
+You can check that this is the expected output by comparing it to the directly
+evaluated program.
+
+```bash
+$ python3 imperator.py eval examples/showcase.imp 5
+30
+```
