@@ -2,6 +2,8 @@ Imperator
 ---------
 A proof of concept imperative language for writing Plutus Smart Contracts.
 
+> This project is [applying for Cardano Catalyst Funding](https://cardano.ideascale.com/c/idea/404076). Please give feedback/assess/vote on it if you like it!
+
 ### What is it?
 
 This is a language (compiler) that transforms a lightweight imperative language into [pluto](https://github.com/Plutonomicon/pluto),
@@ -67,3 +69,10 @@ evaluated program.
 $ python3 imperator.py eval examples/showcase.imp 5
 30
 ```
+
+
+### How can I support this?
+
+Of course contributions are a very welcome way of support, be it ideas or code. I also made this a Cardano Catalyst proposal, so voting for it to be funded would be the biggest help possible! Check it out:
+
+https://cardano.ideascale.com/c/idea/404076
