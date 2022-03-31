@@ -11,10 +11,16 @@ a language that more or less directly compiles into [Untyped Plutus Core (UPLC)]
 
 ### Why is it interesting?
 
-Unlike most programming language, Pluts does not compile down to assembly or any assembly like language.
-Untyped Plutus Core is a functional programming language, which still causes headache to many programmers [[citation needed]](https://en.wikipedia.org/wiki/Wikipedia:Citation_needed).
-Imperator is an attempt to compile an imperative language into a functional language, which is a rather unusual
-direction but well known to be possible among theoretical computer scientist.
+Unlike most programming language, Plutus does not compile down to assembly or any assembly like language.
+Plutus/Untyped Plutus Core is a functional programming language, which still causes headache to many programmers [[citation needed]](https://en.wikipedia.org/wiki/Wikipedia:Citation_needed).
+However, in order for the development of Smart Contracts and dApps on the Cardano blockchain to thrive, the development of applications should be as accessible as possible.
+Imperator is a solution to this, translating an imperative language into the functional language UPLC. This direction is rather unusual
+but well known to be possible among theoretical computer scientists.
+
+This translation brings many useful features in being
+ - a more familiar, intuitive way of writing SCs than Plutus
+ - a more secure platform for SCs than Solidity (by i.e. eliminating side effects)
+ - extensible by efficiently written libraries
 
 ### Is Cardano L1 now EVM compatible??
 
