@@ -82,3 +82,5 @@ $ python3 imperator.py eval examples/showcase.imp 5
 Of course contributions are a very welcome way of support, be it ideas or code. I also made this a Cardano Catalyst proposal, so voting for it to be funded would be the biggest help possible! Check it out:
 
 https://cardano.ideascale.com/c/idea/404076
+
+#### Official partner with [MuesliSwapTeam](https://github.com/MuesliSwapTeam/)
