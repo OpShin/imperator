@@ -15,6 +15,10 @@ a language that more or less directly compiles into [Untyped Plutus Core (UPLC)]
 
 I have given a presentation on this project at the Catalyst Swarm Idea Fest. Check it out here: https://youtu.be/1n9ftsoCLas
 
+I have also hosted an AMA on reddit: https://www.reddit.com/r/cardano/comments/u8t7t4/i_develop_a_new_imperative_prototype_sc_language
+
+
+
 ### Why is it interesting?
 
 Unlike most programming language, Plutus does not compile down to assembly or any assembly like language.
