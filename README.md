@@ -1,13 +1,19 @@
 Imperator
 ---------
+
 A proof of concept imperative language for writing Plutus Smart Contracts.
 
 > This project is [applying for Cardano Catalyst Funding](https://cardano.ideascale.com/c/idea/404076). Please give feedback/assess/vote on it if you like it!
+
+#### Official partner with [MuesliSwapTeam](https://github.com/MuesliSwapTeam/)
+
 
 ### What is it?
 
 This is a language (compiler) that transforms a lightweight imperative language into [pluto](https://github.com/Plutonomicon/pluto),
 a language that more or less directly compiles into [Untyped Plutus Core (UPLC)](https://iohk.io/en/blog/posts/2021/02/02/plutus-tx-compiling-haskell-into-plutus-core/).
+
+I have given a presentation on this project at the Catalyst Swarm Idea Fest. Check it out here: https://youtu.be/1n9ftsoCLas
 
 ### Why is it interesting?
 
@@ -83,4 +89,3 @@ Of course contributions are a very welcome way of support, be it ideas or code. 
 
 https://cardano.ideascale.com/c/idea/404076
 
-#### Official partner with [MuesliSwapTeam](https://github.com/MuesliSwapTeam/)
