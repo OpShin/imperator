@@ -3,7 +3,7 @@ Imperator
 
 A proof of concept imperative language for writing Plutus Smart Contracts.
 
-> This project is [applying for Cardano Catalyst Funding](https://cardano.ideascale.com/c/idea/404076). Please give feedback/assess/vote on it if you like it!
+> This project is [applying for Cardano Catalyst Funding](https://cardano.ideascale.com/c/idea/418458). Please give feedback/assess/vote on it if you like it!
 
 #### Official partner with [MuesliSwapTeam](https://github.com/MuesliSwapTeam/)
 
@@ -91,5 +91,5 @@ $ python3 imperator.py eval examples/showcase.imp 5
 
 Of course contributions are a very welcome way of support, be it ideas or code. I also made this a Cardano Catalyst proposal, so voting for it to be funded would be the biggest help possible! Check it out:
 
-https://cardano.ideascale.com/c/idea/404076
+https://cardano.ideascale.com/c/idea/418458
 
