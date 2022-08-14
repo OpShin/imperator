@@ -1,0 +1,15 @@
+main := function(pkh, _, ctx){
+    tx_info := fields(ctx)[0];
+    tx_sigs := fields(tx_info)[7];
+    valid_sigs := 0;
+    for(sig :: tx_sigs){
+        if(sig =d pkh){
+            valid_sigs := valid_sigs + 1;
+        } noelse
+    };
+    if(valid_sigs <i 1){
+        trace("beneficiary sig missing");
+        error();
+    } noelse
+    return ()
+}
