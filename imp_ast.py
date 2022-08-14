@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from collections import defaultdict
 import typing
 
+from lexer import BUILTINS, BINOP
+
 State = typing.Dict[str, typing.Any]
 STATEMONAD = "s"
 
@@ -47,59 +49,40 @@ class Variable(Expression):
 
 @dataclass
 class BinaryOp(Expression):
+    op: str
     left: Expression
     right: Expression
 
-
-@dataclass
-class Sum(BinaryOp):
     def eval(self, state: State):
-        return self.left.eval(state) + self.right.eval(state)
+        return BINOP[self.op][1](self.left.eval(state), self.right.eval(state))
 
     def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> (({self.left.compile()} {STATEMONAD}) +i ({self.right.compile()} {STATEMONAD})))"
+        binop = BINOP[self.op][0]
+        return rf"(\{STATEMONAD} -> (({self.left.compile()} {STATEMONAD}) {binop} ({self.right.compile()} {STATEMONAD})))"
+
 
 @dataclass
-class Sub(BinaryOp):
-    def eval(self, state: State):
-        return self.left.eval(state) - self.right.eval(state)
-
-    def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> (({self.left.compile()} {STATEMONAD}) -i ({self.right.compile()} {STATEMONAD})))"
-
-@dataclass
-class Mul(BinaryOp):
-    def eval(self, state: State):
-        return self.left.eval(state) * self.right.eval(state)
-
-    def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> (({self.left.compile()} {STATEMONAD}) *i ({self.right.compile()} {STATEMONAD})))"
-
-@dataclass
-class Eq(BinaryOp):
-    def eval(self, state: State):
-        return self.left.eval(state) == self.right.eval(state)
-
-    def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> (({self.left.compile()} {STATEMONAD}) ==i ({self.right.compile()} {STATEMONAD})))"
-
-@dataclass
-class Less(BinaryOp):
-    def eval(self, state: State):
-        return self.left.eval(state) < self.right.eval(state)
-
-    def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> (({self.left.compile()} {STATEMONAD}) <i ({self.right.compile()} {STATEMONAD})))"
-
-@dataclass
-class IntCast(Expression):
+class BuiltIn(Expression):
+    function: str
     expression: Expression
 
     def eval(self, state: State):
-        return int(self.expression.eval(state))
+        return BUILTINS[self.function][1](self.expression.eval(state))
 
     def compile(self) -> str:
-        return rf"(\{STATEMONAD} -> UnIData ({self.expression.compile()} {STATEMONAD}))"
+        builtin = BUILTINS[self.function][0]
+        return rf"(\{STATEMONAD} -> {builtin} ({self.expression.compile()} {STATEMONAD}))"
+
+@dataclass
+class Fields(Expression):
+    value: Expression
+
+    def exec(self, state: State) -> State:
+        # All records/data types are modelled by python lists anyways, so just return them
+        return self.value.eval(state)
+
+    def compile(self) -> str:
+        return rf"(\{STATEMONAD} -> ! ! SndPair (UnConstrData ({self.value.compile()} {STATEMONAD})))"
 
 
 class Unit(Expression):
@@ -150,6 +133,29 @@ class FunctionCall(Expression):
         compiled_args = " ".join(f"({a.compile()} {STATEMONAD})" for a in self.args)
         return rf"(\{STATEMONAD} -> ({STATEMONAD} 0x{self.function_name.encode().hex()}) {compiled_args})"
 
+@dataclass
+class List(Expression):
+    args: typing.List[Number]
+
+    def eval(self, state: State) -> typing.Any:
+        return list(int(a.value) for a in self.args)
+
+    def compile(self) -> str:
+        compiled_args = ", ".join(a.value for a in self.args)
+        return rf"(\{STATEMONAD} -> UnListData (data [{compiled_args}]))"
+
+@dataclass
+class IndexAccess(Expression):
+    value: Expression
+    index: Expression
+
+    def eval(self, state: State) -> State:
+        return self.value.eval(state)[self.index.eval(state)]
+
+    def compile(self) -> str:
+        compiled_v = self.value.compile()
+        compiled_i = self.index.compile()
+        return rf'(\{STATEMONAD} -> let g = (\i xs f -> if (!NullList xs) then (!Trace "OOB" (Error ())) else (if i ==i 0 then (!HeadList xs) else f (i -i 1) (!TailList xs) f)) in (g ({compiled_i} {STATEMONAD}) ({compiled_v} {STATEMONAD}) g))'
 
 class Statement(AST):
     def exec(self, state: State) -> State:
@@ -194,6 +200,16 @@ class Trace(Statement):
     def compile(self) -> str:
         return rf"(\{STATEMONAD} -> ! Trace ({self.value.compile()} {STATEMONAD}) {STATEMONAD} )"
 
+@dataclass
+class Error(Statement):
+
+    def exec(self, state: State) -> State:
+        raise RuntimeError()
+
+    def compile(self) -> str:
+        # TODO: does this work??
+        return rf"(\{STATEMONAD} -> Error ())"
+
 
 @dataclass
 class While(Statement):
@@ -210,6 +226,26 @@ class While(Statement):
         compiled_c = self.cond.compile()
         compiled_s = self.stmt.compile()
         return rf"(\{STATEMONAD} -> let g = (\s f -> if ({compiled_c} s) then f ({compiled_s} s) f else s) in (g {STATEMONAD} g))"
+
+@dataclass
+class For(Statement):
+    var: str
+    expr: Expression
+    stmt: Statement
+
+    def exec(self, state: State) -> State:
+        cur_state = state
+        for elem in self.expr.eval(cur_state):
+            cur_state[self.var.encode("utf8").hex()] = elem
+            cur_state = self.stmt.exec(cur_state)
+        return cur_state
+
+    def compile(self) -> str:
+        compiled_e = self.expr.compile()
+        compiled_s = self.stmt.compile()
+        assignment = rf"(\{STATEMONAD} -> (\x -> if (x ==b 0x{self.var.encode().hex()}) then (!HeadList xs) else ({STATEMONAD} x)))"
+        conjuct_compiled = rf"(\{STATEMONAD} -> {compiled_s} ({assignment} {STATEMONAD}))"
+        return rf"(\{STATEMONAD} -> let g = (\s xs f -> if (!NullList xs) then s else (f ({conjuct_compiled} s) (!TailList xs) f)) in (g {STATEMONAD} ({compiled_e} {STATEMONAD}) g))"
 
 @dataclass
 class Skip(Statement):
@@ -253,5 +289,5 @@ class Program(AST):
         return state[self.function_name.encode().hex()](state)
 
     def compile(self):
-        return rf"({self.stmt.compile()} (\x -> 0)) 0x{self.function_name.encode().hex()}"
+        return rf'{self.stmt.compile()} (\x -> (!Trace "VNI" (Error ()))) 0x{self.function_name.encode().hex()}'
 

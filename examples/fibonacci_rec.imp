@@ -1,9 +1,9 @@
-function(n){
-   fib = function(k, f){
-      if(k < 2){
-        retval = k
+main := function(n){
+   fib := function(k, f){
+      if(k <i 2){
+        retval := k
       } else {
-        retval = f(k-1) + f(k-2)
+        retval := f(k-1) + f(k-2)
       }
       return retval
    }

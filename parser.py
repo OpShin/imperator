@@ -16,7 +16,7 @@ class Parser():
         def program(p):
             return ast.Program(p[0])
 
-        @self.pg.production("function : FUNCTION PAREN_OPEN arguments PAREN_CLOSE BRACK_OPEN statement RETURN expression BRACK_CLOSE")
+        @self.pg.production("function : FUNCTION PAREN_OPEN arguments PAREN_CLOSE BRACE_OPEN statement RETURN expression BRACE_CLOSE")
         def function2(p):
             return ast.Function(p[2], p[5], p[7])
 
@@ -48,17 +48,29 @@ class Parser():
         def arguments(p):
             return [p[0].value] + p[2]
 
-        @self.pg.production("statement : WHILE PAREN_OPEN expression PAREN_CLOSE BRACK_OPEN statement BRACK_CLOSE")
+        @self.pg.production("statement : WHILE PAREN_OPEN expression PAREN_CLOSE BRACE_OPEN statement BRACE_CLOSE")
         def loop(p):
             return ast.While(p[2], p[5])
 
-        @self.pg.production("statement : IF PAREN_OPEN expression PAREN_CLOSE BRACK_OPEN statement BRACK_CLOSE ELSE BRACK_OPEN statement BRACK_CLOSE")
+        @self.pg.production("statement : FOR PAREN_OPEN NAME DOUBLE_COLON expression PAREN_CLOSE BRACE_OPEN statement BRACE_CLOSE")
+        def forloop(p):
+            return ast.For(p[2].value, p[4], p[7])
+
+        @self.pg.production("statement : IF PAREN_OPEN expression PAREN_CLOSE BRACE_OPEN statement BRACE_CLOSE ELSE BRACE_OPEN statement BRACE_CLOSE")
         def if_else(p):
             return ast.IfElse(p[2], p[5], p[9])
+
+        @self.pg.production("statement : IF PAREN_OPEN expression PAREN_CLOSE BRACE_OPEN statement BRACE_CLOSE NOELSE")
+        def if_noelse(p):
+            return ast.IfElse(p[2], p[5], ast.Skip())
 
         @self.pg.production("statement : TRACE PAREN_OPEN expression PAREN_CLOSE")
         def trace(p):
             return ast.Trace(p[2])
+
+        @self.pg.production("statement : ERROR PAREN_OPEN PAREN_CLOSE")
+        def error(p):
+            return ast.Error()
 
         @self.pg.production("statement : NAME EQUAL expression")
         def assignment(p):
@@ -80,27 +92,26 @@ class Parser():
         def variable(p):
             return ast.Variable(p[0].value)
 
-        @self.pg.production("expression : expression PLUS expression")
-        @self.pg.production("expression : expression MINUS expression")
-        @self.pg.production("expression : expression MUL expression")
-        @self.pg.production("expression : expression EQUAL expression")
-        @self.pg.production("expression : expression LESS expression")
+        @self.pg.production("expression : expression BINOP expression")
         def binop(p):
-            op = p[1].gettokentype()
-            if(op == "PLUS"):
-                return ast.Sum(p[0], p[2])
-            if(op == "MINUS"):
-                return ast.Sub(p[0], p[2])
-            if(op == "MUL"):
-                return ast.Mul(p[0], p[2])
-            if(op == "EQUAL"):
-                return ast.Eq(p[0], p[2])
-            if(op == "LESS"):
-                return ast.Less(p[0], p[2])
+            op = p[1].value
+            return ast.BinaryOp(op, p[0], p[2])
 
-        @self.pg.production("expression : INT PAREN_OPEN expression PAREN_CLOSE")
-        def intcast(p):
-            return ast.IntCast(p[2])
+        @self.pg.production("expression : BUILTIN PAREN_OPEN expression PAREN_CLOSE")
+        def builtin(p):
+            return ast.BuiltIn(p[0].value, p[2])
+
+        @self.pg.production("expression : BRACK_OPEN parameters BRACK_CLOSE")
+        def native_list(p):
+            return ast.List(p[1])
+
+        @self.pg.production("expression : FIELDS PAREN_OPEN expression PAREN_CLOSE")
+        def fields(p):
+            return ast.Fields(p[2])
+
+        @self.pg.production("expression : expression BRACK_OPEN expression BRACK_CLOSE")
+        def index_access(p):
+            return ast.IndexAccess(p[0], p[2])
 
         @self.pg.production("expression : PAREN_OPEN expression PAREN_CLOSE")
         def paren(p):
