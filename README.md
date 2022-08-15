@@ -13,7 +13,7 @@ A proof of concept imperative language for writing Plutus Smart Contracts.
 This is a language (compiler) that transforms a lightweight imperative language into [pluto](https://github.com/Plutonomicon/pluto),
 a language that more or less directly compiles into [Untyped Plutus Core (UPLC)](https://iohk.io/en/blog/posts/2021/02/02/plutus-tx-compiling-haskell-into-plutus-core/).
 
-I have given a presentation on this project at the Catalyst Swarm Idea Fest. Check it out here: https://youtu.be/1n9ftsoCLas
+I have given a presentation on this project at the Catalyst Swarm Idea Fest. Check it out here: https://youtu.be/1n9ftsoCLas?t=8349
 
 I have also hosted an AMA on reddit: https://www.reddit.com/r/cardano/comments/u8t7t4/i_develop_a_new_imperative_prototype_sc_language
 
