@@ -1,9 +1,12 @@
 main := function(pkh, _, ctx){
     tx_info := fields(ctx)[0];
     tx_sigs := fields(tx_info)[7];
+    trace("found sigs");
     valid_sigs := 0;
-    for(sig :: tx_sigs){
+    for(sig :: list(tx_sigs)){
+        trace("checking sig");
         if(sig =d pkh){
+            trace("sig valid");
             valid_sigs := valid_sigs + 1;
         } noelse
     };
