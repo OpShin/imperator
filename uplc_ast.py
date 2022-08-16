@@ -26,7 +26,7 @@ class AST:
     def eval(self, state: frozendict.frozendict):
         raise NotImplementedError()
 
-    def compile(self) -> str:
+    def dumps(self) -> str:
         raise NotImplementedError()
 
 
@@ -38,8 +38,8 @@ class Program(AST):
     def eval(self, state):
         return self.term.eval(state)
 
-    def compile(self) -> str:
-        return f"(program {self.version} {self.term.compile()})"
+    def dumps(self) -> str:
+        return f"(program {self.version} {self.term.dumps()})"
 
 
 @dataclass
@@ -51,11 +51,11 @@ class Variable(AST):
             return state[self.name]
         except KeyError as e:
             _LOGGER.error(
-                f"Access to uninitialized variable {self.name} in {self.compile()}"
+                f"Access to uninitialized variable {self.name} in {self.dumps()}"
             )
             raise e
 
-    def compile(self) -> str:
+    def dumps(self) -> str:
         return self.name
 
 
@@ -67,7 +67,7 @@ class Constant(AST):
     def eval(self, state):
         return self.type.value(self.value)
 
-    def compile(self) -> str:
+    def dumps(self) -> str:
         return f"(con {self.type.name} {self.value})"
 
 
@@ -82,8 +82,8 @@ class Lambda(AST):
 
         return partial(f)
 
-    def compile(self) -> str:
-        return f"(lam {self.var_name} {self.term.compile()})"
+    def dumps(self) -> str:
+        return f"(lam {self.var_name} {self.term.dumps()})"
 
 
 @dataclass
@@ -96,8 +96,8 @@ class Delay(AST):
 
         return f
 
-    def compile(self) -> str:
-        return f"(delay {self.term.compile()})"
+    def dumps(self) -> str:
+        return f"(delay {self.term.dumps()})"
 
 
 @dataclass
@@ -109,12 +109,12 @@ class Force(AST):
             return self.term.eval(state)()
         except TypeError as e:
             _LOGGER.error(
-                f"Trying to force an uncallable object, probably not delayed? in {self.compile()}"
+                f"Trying to force an uncallable object, probably not delayed? in {self.dumps()}"
             )
             raise e
 
-    def compile(self) -> str:
-        return f"(force {self.term.compile()})"
+    def dumps(self) -> str:
+        return f"(force {self.term.dumps()})"
 
 
 @dataclass
@@ -124,16 +124,16 @@ class BuiltIn(AST):
     def eval(self, state):
         return partial(self.builtin.value)
 
-    def compile(self) -> str:
+    def dumps(self) -> str:
         return f"(builtin {self.builtin.name})"
 
 
 @dataclass
 class Error(AST):
     def eval(self, state):
-        raise RuntimeError(f"Execution called {self.compile()}")
+        raise RuntimeError(f"Execution called {self.dumps()}")
 
-    def compile(self) -> str:
+    def dumps(self) -> str:
         return f"(error)"
 
 
@@ -152,8 +152,8 @@ class Apply(AST):
                 res = f()
             return res
         except AttributeError as e:
-            _LOGGER.warning(f"Tried to apply value to non-function in {self.compile()}")
+            _LOGGER.warning(f"Tried to apply value to non-function in {self.dumps()}")
             raise e
 
-    def compile(self) -> str:
-        return f"[{self.f.compile()} {self.x.compile()}]"
+    def dumps(self) -> str:
+        return f"[{self.f.dumps()} {self.x.dumps()}]"
