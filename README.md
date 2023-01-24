@@ -3,9 +3,9 @@ Imperator
 
 A proof of concept imperative language for writing Plutus Smart Contracts.
 
-> This project is [applying for Cardano Catalyst Funding](https://cardano.ideascale.com/c/idea/418458). Please give feedback/assess/vote on it if you like it!
+#### This project has moved and is now called [eopsin](https://GitHub.com/imperatorlang/eopsin)
 
-#### Official partner with [MuesliSwapTeam](https://github.com/MuesliSwapTeam/)
+The following outlines the general idea of the project.
 
 
 ### What is it?
